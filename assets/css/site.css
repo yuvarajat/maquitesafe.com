@@ -1066,6 +1066,32 @@ textarea:focus-visible {
   text-transform: uppercase;
 }
 
+.product-card__view {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  color: var(--white);
+  background: rgba(36, 24, 30, 0.76);
+  backdrop-filter: blur(9px);
+  font-size: 0.68rem;
+  font-weight: 800;
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.product-card:hover .product-card__view,
+.product-card__media:focus-visible .product-card__view {
+  opacity: 1;
+  transform: none;
+}
+
 .product-card__body {
   padding: 23px 22px 22px;
 }
