@@ -141,14 +141,6 @@ if ("IntersectionObserver" in window) {
   );
   observedSections.forEach((section) => sectionObserver.observe(section));
 
-  const contactSection = document.querySelector("#contact");
-  if (contactSection) {
-    const contactObserver = new IntersectionObserver(
-      ([entry]) => document.body.classList.toggle("contact-in-view", entry.isIntersecting),
-      { threshold: 0.08 }
-    );
-    contactObserver.observe(contactSection);
-  }
 }
 
 const form = document.querySelector("[data-enquiry-form]");
