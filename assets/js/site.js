@@ -31,11 +31,16 @@ function createProductCard(product, index) {
   const article = document.createElement("article");
   article.className = "product-card reveal";
   article.style.setProperty("--card-index", index);
+  article.dataset.productPreview = "";
+  article.dataset.productName = product.name;
+  article.dataset.productSize = product.size;
+  article.dataset.productImage = `assets/images/${product.image}`;
   article.innerHTML = `
-    <div class="product-card__media">
+    <button class="product-card__media" type="button" aria-label="View full image of ${product.name}, ${product.size}" data-preview>
       <img src="assets/images/${product.image}" alt="${product.name}, ${product.size}" loading="lazy" />
       <span class="product-card__tag">${product.tag || categoryLabels[product.category]}</span>
-    </div>
+      <span class="product-card__view">View full image <span aria-hidden="true">↗</span></span>
+    </button>
     <div class="product-card__body">
       <h3>${product.name}</h3>
       <div class="product-card__meta">
@@ -149,6 +154,35 @@ if ("IntersectionObserver" in window) {
 const form = document.querySelector("[data-enquiry-form]");
 const subjectField = document.querySelector("[data-subject]");
 const messageField = document.querySelector("[data-message]");
+const lightbox = document.querySelector("[data-lightbox]");
+const lightboxImage = document.querySelector("[data-lightbox-image]");
+const lightboxTitle = document.querySelector("[data-lightbox-title]");
+const lightboxSize = document.querySelector("[data-lightbox-size]");
+const lightboxCloseButton = lightbox?.querySelector(".image-lightbox__close");
+let lightboxTrigger;
+
+function openLightbox(card) {
+  if (!lightbox || !lightboxImage || !lightboxTitle || !lightboxSize) return;
+  lightboxTrigger = document.activeElement;
+  lightboxImage.src = card.dataset.productImage;
+  lightboxImage.alt = `${card.dataset.productName}, ${card.dataset.productSize} — full image`;
+  lightboxTitle.textContent = card.dataset.productName;
+  lightboxSize.textContent = card.dataset.productSize;
+  lightbox.hidden = false;
+  document.body.classList.add("lightbox-open");
+  lightboxCloseButton?.focus();
+}
+
+function closeLightbox() {
+  if (!lightbox || lightbox.hidden) return;
+  lightbox.hidden = true;
+  document.body.classList.remove("lightbox-open");
+  if (lightboxImage) {
+    lightboxImage.src = "";
+    lightboxImage.alt = "";
+  }
+  lightboxTrigger?.focus?.();
+}
 
 form?.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -175,14 +209,34 @@ form?.addEventListener("submit", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  if (event.target.closest("[data-lightbox-close]")) {
+    closeLightbox();
+    return;
+  }
+
   const trigger = event.target.closest("[data-enquire]");
-  if (!trigger) return;
-  event.preventDefault();
-  const product = trigger.dataset.enquire;
-  if (subjectField) subjectField.value = `Enquiry about ${product}`;
-  if (messageField) messageField.value = `Hello, I would like to know the price and availability for ${product}. Please share the wholesale details.`;
-  form?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
-  window.setTimeout(() => subjectField?.focus({ preventScroll: true }), reducedMotion ? 0 : 650);
+  if (trigger) {
+    event.preventDefault();
+    const product = trigger.dataset.enquire;
+    if (subjectField) subjectField.value = `Enquiry about ${product}`;
+    if (messageField) messageField.value = `Hello, I would like to know the price and availability for ${product}. Please share the wholesale details.`;
+    form?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" });
+    window.setTimeout(() => subjectField?.focus({ preventScroll: true }), reducedMotion ? 0 : 650);
+    return;
+  }
+
+  const productCard = event.target.closest("[data-product-preview]");
+  if (productCard && !event.target.closest("a, button:not([data-preview])")) {
+    openLightbox(productCard);
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && lightbox && !lightbox.hidden) closeLightbox();
+  if (event.key === "Tab" && lightbox && !lightbox.hidden) {
+    event.preventDefault();
+    lightboxCloseButton?.focus();
+  }
 });
 
 document.querySelector("[data-year]").textContent = new Date().getFullYear();
